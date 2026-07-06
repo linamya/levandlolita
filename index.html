@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приглашение на свадьбу</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a href="main.html" class="envelope-link" id="open-envelope">
+        <img src="envelope.png" alt="Приглашение на свадьбу" class="envelope-img">
+    </a>
+
+    <script>
+        document.getElementById('open-envelope').addEventListener('click', function() {
+            // Запоминаем в браузере, что нужно включить музыку на следующей странице
+            localStorage.setItem('playMusic', 'true');
+        });
+    </script>
+
+</body>
+</html>

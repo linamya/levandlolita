@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наша Свадьба</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<audio id="bg-music" src="song.mp3" loop prefetch></audio>
+
+    <button id="music-toggle" class="music-btn pulse-animation" onclick="toggleMusic()">
+        <svg class="icon-play" viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" style="display: none;">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+    </button>
+
+    <div class="main-content">
+        
+        <section class="page-block">
+            <img src="photo1.png" alt="Главное фото" class="taplink-img">
+        </section>
+
+        <section class="page-block">
+            <img src="photo2.png" alt="Календарь" class="taplink-img">
+        </section>
+
+        <section class="page-block">
+            <a href="https://yandex.ru/maps/org/u_soma/18575956865/?ll=41.112594%2C44.981157&z=14" target="_blank" class="map-link">
+                <img src="photo3.png" alt="Место проведения" class="taplink-img">
+            </a>
+        </section>
+
+        <section class="page-block">
+            <img src="photo4.png" alt="Тайминг дня" class="taplink-img">
+        </section>
+
+        <section class="page-block">
+            <img src="photo5.png" alt="Дресс-код" class="taplink-img">
+        </section>
+
+        <section class="page-block dress-slider-section">
+            <div class="slider-container">
+                <div class="slider-item">
+                    <img src="photo6.png" alt="Пожелания 1">
+                </div>
+                <div class="slider-item">
+                    <img src="photo7.png" alt="Пожелания 2">
+                </div>
+            </div>
+            <div class="slider-arrows">
+                <button class="arrow" onclick="moveSlide(-1)">&#10094;</button>
+                <button class="arrow" onclick="moveSlide(1)">&#10095;</button>
+            </div>
+            <div class="slider-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+            </div>
+        </section>
+
+        <section class="page-block">
+            <img src="photo9.png" alt="Фото перед таймером" class="taplink-img">
+        </section>
+
+        <section class="page-block timer-section">
+            <div class="timer-container">
+                <div class="timer-title">До свадьбы осталось:</div>
+                <div class="timer-display">
+                    <div class="timer-block">
+                        <span class="timer-number" id="days">00</span>
+                        <span class="timer-label">ДНЕЙ</span>
+                    </div>
+                    <div class="timer-block">
+                        <span class="timer-number" id="hours">00</span>
+                        <span class="timer-label">часов</span>
+                    </div>
+                    <div class="timer-block">
+                        <span class="timer-number" id="minutes">00</span>
+                        <span class="timer-label">минут</span>
+                    </div>
+                    <div class="timer-block">
+                        <span class="timer-number" id="seconds">00</span>
+                        <span class="timer-label">секунд</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-block">
+            <img src="photo8.png" alt="Финальное фото" class="taplink-img">
+        </section>
+    </div> <script>
+        // --- 1. ЛОГИКА МУЗЫКИ ---
+        try {
+            const audio = document.getElementById('bg-music');
+            const musicBtn = document.getElementById('music-toggle');
+            const iconPlay = document.querySelector('.icon-play');
+            const iconPause = document.querySelector('.icon-pause');
+
+            if (audio && musicBtn) {
+                window.toggleMusic = function() {
+                    if (audio.paused) {
+                        if (audio.currentTime === 0) {
+                            audio.currentTime = 33;
+                        }
+                        audio.play().then(() => {
+                            updateUI(true);
+                        }).catch(e => console.log("Браузер заблокировал звук:", e));
+                    } else {
+                        audio.pause();
+                        updateUI(false);
+                    }
+                };
+
+                function updateUI(isPlaying) {
+                    if (isPlaying) {
+                        iconPlay.style.display = 'none';
+                        iconPause.style.display = 'block';
+                        musicBtn.classList.remove('pulse-animation');
+                    } else {
+                        iconPlay.style.display = 'block';
+                        iconPause.style.display = 'none';
+                        musicBtn.classList.add('pulse-animation');
+                    }
+                }
+
+                if (localStorage.getItem('playMusic') === 'true') {
+                    audio.currentTime = 33;
+                    audio.play().then(() => {
+                        updateUI(true);
+                        localStorage.removeItem('playMusic');
+                    }).catch(() => {
+                        console.log("Автоплей заблокирован системой.");
+                    });
+                }
+            }
+        } catch (e) { console.error("Ошибка в блоке музыки:", e); }
+
+        // --- 2. ЛОГИКА СЛАЙДЕРА ---
+        try {
+            const container = document.querySelector('.slider-container');
+            const slides = document.querySelectorAll('.slider-item');
+            const dots = document.querySelectorAll('.dot');
+            let currentIndex = 0;
+
+            const observerOptions = { root: container, threshold: 0.51 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const index = Array.from(slides).indexOf(entry.target);
+                        currentIndex = index;
+                        dots.forEach(dot => dot.classList.remove('active'));
+                        if (dots[index]) dots[index].classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            slides.forEach(slide => observer.observe(slide));
+
+            window.moveSlide = function(direction) {
+                const slidesCount = slides.length;
+                currentIndex += direction;
+                if (currentIndex >= slidesCount) currentIndex = 0;
+                if (currentIndex < 0) currentIndex = slidesCount - 1;
+                const slideWidth = container.clientWidth;
+                container.scrollTo({ left: slideWidth * currentIndex, behavior: 'smooth' });
+            }
+
+            window.currentSlide = function(index) {
+                currentIndex = index;
+                const slideWidth = container.clientWidth;
+                container.scrollTo({ left: slideWidth * currentIndex, behavior: 'smooth' });
+            }
+
+            dots.forEach((dot, index) => {
+                dot.setAttribute('onclick', `currentSlide(${index})`);
+            });
+        } catch (e) { console.error("Ошибка слайдера:", e); }
+
+        // --- 3. ЛОГИКА ТАЙМЕРА (04.09.2026 16:00) ---
+        (function() {
+            const countDownDate = new Date(2026, 8, 4, 16, 0, 0).getTime();
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                const distance = countDownDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                const dEl = document.getElementById("days");
+                const hEl = document.getElementById("hours");
+                const mEl = document.getElementById("minutes");
+                const sEl = document.getElementById("seconds");
+
+                if (dEl && hEl && mEl && sEl) {
+                    if (distance < 0) {
+                        clearInterval(timerInterval);
+                        dEl.innerText = "00"; hEl.innerText = "00"; mEl.innerText = "00"; sEl.innerText = "00";
+                        const displayEl = document.querySelector(".timer-display");
+                        if (displayEl) {
+                            displayEl.innerHTML = "<span style='font-size: 24px; font-family: \"Forum\", serif;'>Событие началось!</span>";
+                        }
+                    } else {
+                        dEl.innerText = days < 10 ? "0" + days : days;
+                        hEl.innerText = hours < 10 ? "0" + hours : hours;
+                        mEl.innerText = minutes < 10 ? "0" + minutes : minutes;
+                        sEl.innerText = seconds < 10 ? "0" + seconds : seconds;
+                    }
+                }
+            }
+            updateTimer();
+            const timerInterval = setInterval(updateTimer, 1000);
+        })();
+    </script>
+</body>
+</html>
